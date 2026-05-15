@@ -1,0 +1,127 @@
+@use 'reset';
+
+:root {
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --color-bg: #000;
+  --color-text: #f0ece4;
+  --color-accent: #e07a5f;
+  --color-muted: rgba(240, 236, 228, 0.35);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-display), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#landing-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#three-renderer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+#title-panel {
+  position: fixed;
+  bottom: 10vh;
+  left: 6vw;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .label {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--color-accent);
+    text-transform: lowercase;
+  }
+
+  h1 {
+    font-size: clamp(3.5rem, 5rem, 8rem);
+    font-weight: 800;
+    line-height: 0.8;
+    //letter-spacing: -0.05em;
+    color: var(--color-text);
+    mix-blend-mode: exclusion;
+  }
+
+  h2 {
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--color-muted);
+    letter-spacing: 0.05em;
+    margin-top: 0.75rem;
+  }
+
+  h3 {
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.65rem, 1vw, 0.9rem);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--color-muted);
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+  }
+
+  .hint {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.65rem;
+    color: var(--color-muted);
+    letter-spacing: 0.1em;
+    margin-top: 1.5rem;
+  }
+
+  a:hover {
+    color: var(--color-accent);
+    animation: pulse-line 2s ease-in-out infinite;
+  }
+}
+
+#scroll-indicator {
+  position: fixed;
+  right: 5vw;
+  bottom: 10vh;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  span {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--color-muted);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--color-accent), transparent);
+    animation: pulse-line 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-line {
+  0%,
+  100% {
+    color: var(--color-accent);
+  }
+  50% {
+    color: var(--color-text);
+  }
+}
