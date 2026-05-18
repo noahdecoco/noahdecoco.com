@@ -5,7 +5,7 @@ import { createMouseTracker } from './input/mouse';
 import { createCubeInstallation } from './installations/cube';
 import { createParticleInstallation } from './installations/particles';
 import { createTvNoise } from './transitions/noise';
-import { createBoxBreathingInstallation } from './installations/box-breathing.ts';
+import { createCircularBreathingInstallation } from './installations/circular-breathing.ts';
 
 const createApp = () => {
   // STATE
@@ -26,7 +26,7 @@ const createApp = () => {
     const mouse = createMouseTracker();
 
     installations = [
-      createBoxBreathingInstallation(renderer),
+      createCircularBreathingInstallation(renderer),
       createParticleInstallation(renderer, mouse),
       createCubeInstallation(renderer, mouse),
     ];
