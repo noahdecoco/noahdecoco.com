@@ -87,7 +87,7 @@ export const createCircularBreathingInstallation = (
     light2 = new THREE.PointLight(0x2244ff, 13, 20);
     light3 = new THREE.PointLight(0x227733, 13, 20);
     scene.add(light1, light2, light3);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.05));
+    scene.add(new THREE.AmbientLight(0x660000, 0.5));
   };
 
   const _setupCamera = (): void => {
@@ -351,5 +351,12 @@ export const createCircularBreathingInstallation = (
     scene.clear();
   };
 
-  return { setup, start, stop, dispose };
+  return {
+    id: 'circular-breathing',
+    name: 'A universe breathing',
+    setup,
+    start,
+    stop,
+    dispose,
+  };
 };

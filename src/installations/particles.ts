@@ -73,7 +73,7 @@ export const createParticleInstallation = (
   // STATE
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
-  let cameraFov = MAX_FOV;
+  let cameraFov = (MIN_FOV + MAX_FOV) / 2;
   let geometry: THREE.BufferGeometry;
   let material: THREE.ShaderMaterial;
   let points: THREE.Points;
@@ -255,7 +255,7 @@ export const createParticleInstallation = (
 
   const _reset = (): void => {
     time = 0;
-    cameraFov = MAX_FOV;
+    cameraFov = (MIN_FOV + MAX_FOV) / 2;
     _initParticles();
   };
 
@@ -288,5 +288,12 @@ export const createParticleInstallation = (
     scene.clear();
   };
 
-  return { setup, start, stop, dispose };
+  return {
+    id: 'exploding-lights',
+    name: 'Glowing in the sun',
+    setup,
+    start,
+    stop,
+    dispose,
+  };
 };

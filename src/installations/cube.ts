@@ -262,5 +262,12 @@ export const createCubeInstallation = (
     scene.clear();
   };
 
-  return { setup, start, stop, dispose };
+  return {
+    id: 'cube-faces',
+    name: 'Whatcha looking at?',
+    setup,
+    start,
+    stop,
+    dispose,
+  };
 };

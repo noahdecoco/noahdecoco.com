@@ -125,3 +125,85 @@ body {
     color: var(--color-text);
   }
 }
+
+#menu-btn {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+}
+
+#menu-btn span {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: white;
+  transition: opacity 0.2s;
+}
+
+#menu-btn:hover span {
+  opacity: 0.6;
+}
+
+#gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+#gallery-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 180px);
+  gap: 24px;
+}
+
+.gallery-thumb {
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.gallery-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.03);
+}
+
+.gallery-thumb canvas,
+.gallery-thumb img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  object-fit: cover;
+}
+
+.gallery-thumb p {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 8px 10px;
+  margin: 0;
+}

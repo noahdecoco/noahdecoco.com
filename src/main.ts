@@ -8,9 +8,14 @@ import { createTvNoise } from './transitions/noise';
 import { createCircularBreathingInstallation } from './installations/circular-breathing.ts';
 
 const createApp = () => {
+  const menuBtn = document.getElementById('menu-btn')!;
+  const overlay = document.getElementById('gallery-overlay')!;
+  const grid = document.getElementById('gallery-grid')!;
+
   // STATE
   let renderer: THREE.WebGLRenderer;
   let installations: Installation[];
+  let tvNoise: ReturnType<typeof createTvNoise>;
   let current = 0;
   let transitioning = false;
 
@@ -22,32 +27,67 @@ const createApp = () => {
     document.getElementById('three-renderer')!.appendChild(renderer.domElement);
   };
 
+  const _loadInstallation = (index: number): void => {
+    if (transitioning || index === current) return;
+    transitioning = true;
+
+    tvNoise.start(() => {
+      installations[current].stop();
+      current = index;
+      installations[current].start();
+      transitioning = false;
+    });
+  };
+
   const _setupInstallations = (): void => {
     const mouse = createMouseTracker();
 
     installations = [
-      createCircularBreathingInstallation(renderer),
       createParticleInstallation(renderer, mouse),
+      createCircularBreathingInstallation(renderer),
       createCubeInstallation(renderer, mouse),
     ];
 
-    installations.forEach((i) => i.setup());
+    installations.forEach((installation, index) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb';
+      thumb.innerHTML = `
+        <img src="/thumbnails/${installation.id}.png" alt="${installation.name}" />
+        <p>${installation.name}</p>
+      `;
+      thumb.addEventListener('click', () => {
+        overlay.classList.remove('open');
+        _loadInstallation(index);
+      });
+      grid.appendChild(thumb);
+
+      installation.setup();
+    });
+
     installations[current].start();
   };
 
-  const _setupTransitions = (): void => {
-    const tvNoise = createTvNoise(renderer);
+  const _setupControls = (): void => {
+    tvNoise = createTvNoise(renderer);
 
+    // space: load next
     window.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || transitioning) return;
-      transitioning = true;
+      if (e.code === 'Space') {
+        _loadInstallation((current + 1) % installations.length);
+      }
+      if (e.key === 'Escape') {
+        overlay.classList.remove('open');
+      }
+    });
 
-      tvNoise.start(() => {
-        installations[current].stop();
-        current = (current + 1) % installations.length;
-        installations[current].start();
-        transitioning = false;
-      });
+    // menu toggle
+    menuBtn.addEventListener('click', () => {
+      overlay.classList.toggle('open');
+    });
+
+    // close on backdrop click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
     });
   };
 
@@ -58,7 +98,7 @@ const createApp = () => {
   const start = (): void => {
     _setupRenderer();
     _setupInstallations();
-    _setupTransitions();
+    _setupControls();
     window.addEventListener('resize', _onResize);
   };
 

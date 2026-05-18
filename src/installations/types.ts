@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 export interface Installation {
+  id: string;
+  name: string;
   setup: () => void;
   start: () => void;
   stop: () => void;
