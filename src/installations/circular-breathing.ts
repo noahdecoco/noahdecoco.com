@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Installation } from './types';
 import { rand, randInt } from '../utils';
+import type { MouseState } from '../input/mouse.ts';
 
 const vertexShader = `
   attribute float size;
@@ -50,7 +51,8 @@ interface Particle {
 }
 
 export const createCircularBreathingInstallation = (
-  renderer: THREE.WebGLRenderer
+  renderer: THREE.WebGLRenderer,
+  mouse: MouseState
 ): Installation => {
   const COUNT = 3000;
   const TIMER = new THREE.Timer();
@@ -77,6 +79,7 @@ export const createCircularBreathingInstallation = (
   let sizes: Float32Array;
   let colours: Float32Array;
   let material: THREE.ShaderMaterial;
+  let skyBoxMaterial: THREE.ShaderMaterial;
 
   const _setupScene = (): void => {
     scene = new THREE.Scene();
@@ -116,7 +119,7 @@ export const createCircularBreathingInstallation = (
     const materialOuter = new THREE.MeshPhongMaterial({
       color: 0xaaddff,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.2,
       side: THREE.BackSide,
       depthWrite: false,
     });
@@ -141,6 +144,64 @@ export const createCircularBreathingInstallation = (
       wireframes.push(mesh);
       // scene.add(mesh);
     });
+  };
+
+  const _setupSkybox = (): void => {
+    const geometry = new THREE.SphereGeometry(70, 32, 32);
+
+    skyBoxMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+      varying vec3 vPosition;
+      
+      void main() {
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+      fragmentShader: `
+      varying vec3 vPosition;
+      uniform float uTime;
+
+      float random(vec2 st) {
+          return fract(sin(st.x * 127.1 + st.y * 311.7) * 178493.2434);
+      }
+      
+      void main() {
+          vec3 dir = normalize(vPosition);
+          vec3 scaled = dir * 60.0;
+          vec2 cell = floor(scaled.xy);
+          vec2 local = fract(scaled.xy);  // where within the cell we are
+          float r = random(cell);
+          
+          float height = dir.y * 0.5 + 0.5;
+          vec3 colour = mix(vec3(0.0, 0.01, 0.15), vec3(0.0, 0.11, 0.05), height);
+            
+          if (r > 0.95) {
+            float temp = random(cell + 0.5);
+            
+            vec3 starColour = mix(
+              vec3(0.8, 0.9, 1.0),  // cool blue-white
+              vec3(1.0, 0.95, 0.8), // warm yellow-white
+              temp
+            );
+            
+            float dist = length(local - 0.5);
+            float glow = smoothstep(0.08, 0.0, dist);
+
+            colour += starColour * glow;
+          } 
+            
+          gl_FragColor = vec4(colour, 1.0);
+      }
+    `,
+      side: THREE.BackSide,
+      depthWrite: false,
+      depthTest: false,
+    });
+
+    const skyMesh = new THREE.Mesh(geometry, skyBoxMaterial);
+    skyMesh.renderOrder = -1;
+    scene.add(skyMesh);
   };
 
   const _setupParticles = (): void => {
@@ -263,6 +324,13 @@ export const createCircularBreathingInstallation = (
     geometry.attributes.position.needsUpdate = true;
   };
 
+  const _animateCamera = () => {
+    camera.position.x = Math.sin(time * 0.03) * 10 + mouse.x * 10;
+    camera.position.y = mouse.y * 5;
+    camera.position.z = Math.cos(time * 0.03) * 10;
+    camera.lookAt(0, 0, 0);
+  };
+
   const _animateLights = (): void => {
     const radius = 5;
 
@@ -300,16 +368,13 @@ export const createCircularBreathingInstallation = (
 
     _animateLights();
     _animateParticles(time);
+    _animateCamera();
 
     sphereInner.scale.setScalar(getScale(time));
     sphereOuter.scale.setScalar(getScale(time) + 0.1);
     wireframes.forEach((frame) => {
       frame.scale.setScalar(getScale(time + 0.3));
     });
-
-    camera.position.x = Math.sin(time * 0.03) * 10;
-    camera.position.z = Math.cos(time * 0.03) * 10;
-    camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
@@ -332,6 +397,7 @@ export const createCircularBreathingInstallation = (
     _setupSphere();
     _setupWireframes();
     _setupParticles();
+    _setupSkybox();
     _initParticles();
   };
 

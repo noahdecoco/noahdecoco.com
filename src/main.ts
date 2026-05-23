@@ -6,11 +6,13 @@ import { createCubeInstallation } from './installations/cube';
 import { createParticleInstallation } from './installations/particles';
 import { createTvNoise } from './transitions/noise';
 import { createCircularBreathingInstallation } from './installations/circular-breathing.ts';
+import { createSoundEngine } from './audio/soundEngine.ts';
 
 const createApp = () => {
   const menuBtn = document.getElementById('menu-btn')!;
   const overlay = document.getElementById('gallery-overlay')!;
   const grid = document.getElementById('gallery-grid')!;
+  const soundEngine = createSoundEngine();
 
   // STATE
   let renderer: THREE.WebGLRenderer;
@@ -30,6 +32,7 @@ const createApp = () => {
   const _loadInstallation = (index: number): void => {
     if (transitioning || index === current) return;
     transitioning = true;
+    soundEngine.play('static');
 
     tvNoise.start(() => {
       installations[current].stop();
@@ -44,7 +47,7 @@ const createApp = () => {
 
     installations = [
       createParticleInstallation(renderer, mouse),
-      createCircularBreathingInstallation(renderer),
+      createCircularBreathingInstallation(renderer, mouse),
       createCubeInstallation(renderer, mouse),
     ];
 

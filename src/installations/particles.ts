@@ -124,6 +124,38 @@ export const createParticleInstallation = (
     scene.add(points);
   };
 
+  const _setupSkybox = (): void => {
+    const geometry = new THREE.SphereGeometry(70, 32, 32);
+
+    const skyBoxMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+      varying vec3 vPosition;
+      
+      void main() {
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+      fragmentShader: `
+      varying vec3 vPosition;
+      
+      void main() {  
+        vec3 dir = normalize(vPosition);
+        float height = dir.y * 0.5 + 0.5;
+        vec3 colour = mix(vec3(0.16, 0.02, 0.00), vec3(0.0, 0.02, 0.15), height);
+        gl_FragColor = vec4(colour, 1.0);
+      }
+    `,
+      side: THREE.BackSide,
+      depthWrite: false,
+      depthTest: false,
+    });
+
+    const skyMesh = new THREE.Mesh(geometry, skyBoxMaterial);
+    skyMesh.renderOrder = -1;
+    scene.add(skyMesh);
+  };
+
   const _initParticles = (): void => {
     particles = [];
 
@@ -263,6 +295,7 @@ export const createParticleInstallation = (
     _setupScene();
     _setupCamera();
     _setupGeometry();
+    _setupSkybox();
     _initParticles();
   };
 

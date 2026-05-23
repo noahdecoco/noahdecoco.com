@@ -75,12 +75,15 @@ body {
     margin-top: 0.5rem;
   }
 
-  .hint {
-    font-family: var(--font-mono), monospace;
-    font-size: 0.65rem;
-    color: var(--color-muted);
-    letter-spacing: 0.1em;
+  .hints {
     margin-top: 1.5rem;
+    .hint {
+      font-family: var(--font-mono), monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.1em;
+      margin-top: 0.5rem;
+    }
   }
 
   a:hover {

@@ -51,12 +51,16 @@ export const createCubeInstallation = (
     scene.add(keyLight);
 
     blueLight = new THREE.PointLight(0x4488ff, 4, 30);
-    blueLight.position.set(-5, -3, 3);
+    blueLight.position.set(-2, -3, 3);
     scene.add(blueLight);
 
     pinkLight = new THREE.PointLight(0xff4422, 3, 20);
     pinkLight.position.set(0, -5, -5);
     scene.add(pinkLight);
+
+    const redLight = new THREE.PointLight(0xff4422, 2, 200);
+    redLight.position.set(10, 5, -5);
+    scene.add(redLight);
 
     scene.add(new THREE.AmbientLight(0x111111, 1));
   };
@@ -86,9 +90,9 @@ export const createCubeInstallation = (
     geometry = new THREE.BoxGeometry(1, 1, 1);
     const sharedMaterials = _createMaterials();
 
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        for (let z = -1; z <= 1; z++) {
+    for (let x = -10; x <= 10; x++) {
+      for (let y = -10; y <= 10; y++) {
+        for (let z = -5; z <= 1; z++) {
           const hx = x * 2.2;
           const hy = y * 2.2;
           const hz = z * 2.2;

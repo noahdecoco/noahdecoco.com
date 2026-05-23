@@ -102,7 +102,6 @@ export const createTvNoise = (renderer: THREE.WebGLRenderer): TvNoise => {
 
       // Done — hide and clean up
       if (material.uniforms.uProgress.value >= 1.0) {
-        console.log('Done');
         mesh.visible = false;
         if (animationId !== null) cancelAnimationFrame(animationId);
       }
