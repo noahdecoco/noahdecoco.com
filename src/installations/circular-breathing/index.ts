@@ -1,31 +1,11 @@
 import * as THREE from 'three';
-import type { Installation } from './types';
-import { rand, randInt } from '../utils';
-import type { MouseState } from '../input/mouse.ts';
-
-const vertexShader = `
-  attribute float size;
-  varying vec3 vColour;
-
-  void main() {
-    vColour = color;
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = size * (300.0 / -mvPosition.z);
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-const fragmentShader = `
-  varying vec3 vColour;
-
-  void main() {
-    float dist = length(gl_PointCoord - vec2(0.5));
-    if (dist > 0.5) discard;
-    float glow = 1.0 - smoothstep(0.0, 0.5, dist);
-    glow = pow(glow, 1.5);
-    gl_FragColor = vec4(vColour * glow, glow);
-  }
-`;
+import type { Installation } from '../types.ts';
+import { rand, randInt } from '../../utils';
+import type { MouseState } from '../../input/mouse.ts';
+import skyboxVertexShader from './skybox.vert.glsl';
+import skyboxFragmentShader from './skybox.frag.glsl';
+import particlesVertexShader from './particles.vert.glsl';
+import particlesFragmentShader from './particles.frag.glsl';
 
 const COLOURS = [
   new THREE.Color(0xa8aadc), // purple
@@ -150,50 +130,8 @@ export const createCircularBreathingInstallation = (
     const geometry = new THREE.SphereGeometry(70, 32, 32);
 
     skyBoxMaterial = new THREE.ShaderMaterial({
-      vertexShader: `
-      varying vec3 vPosition;
-      
-      void main() {
-        vPosition = position;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-      fragmentShader: `
-      varying vec3 vPosition;
-      uniform float uTime;
-
-      float random(vec2 st) {
-          return fract(sin(st.x * 127.1 + st.y * 311.7) * 178493.2434);
-      }
-      
-      void main() {
-          vec3 dir = normalize(vPosition);
-          vec3 scaled = dir * 60.0;
-          vec2 cell = floor(scaled.xy);
-          vec2 local = fract(scaled.xy);  // where within the cell we are
-          float r = random(cell);
-          
-          float height = dir.y * 0.5 + 0.5;
-          vec3 colour = mix(vec3(0.0, 0.01, 0.15), vec3(0.0, 0.11, 0.05), height);
-            
-          if (r > 0.95) {
-            float temp = random(cell + 0.5);
-            
-            vec3 starColour = mix(
-              vec3(0.8, 0.9, 1.0),  // cool blue-white
-              vec3(1.0, 0.95, 0.8), // warm yellow-white
-              temp
-            );
-            
-            float dist = length(local - 0.5);
-            float glow = smoothstep(0.08, 0.0, dist);
-
-            colour += starColour * glow;
-          } 
-            
-          gl_FragColor = vec4(colour, 1.0);
-      }
-    `,
+      vertexShader: skyboxVertexShader,
+      fragmentShader: skyboxFragmentShader,
       side: THREE.BackSide,
       depthWrite: false,
       depthTest: false,
@@ -215,8 +153,8 @@ export const createCircularBreathingInstallation = (
     geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
     material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
+      vertexShader: particlesVertexShader,
+      fragmentShader: particlesFragmentShader,
       vertexColors: true,
       transparent: true,
       depthWrite: false,
@@ -349,17 +287,6 @@ export const createCircularBreathingInstallation = (
       Math.cos(time * 0.5 + Math.PI) * radius,
       Math.sin(time * 0.4) * radius
     );
-
-    // const hueShift = (time * 0.0005) % 1;
-    // light1.color.setHSL((0.0 + hueShift) % 1, 1.0, 0.5); // reds
-    // light2.color.setHSL((0.95 + hueShift) % 1, 1.0, 0.6); // pinks
-    // light3.color.setHSL((0.08 + hueShift) % 1, 1.0, 0.5); // oranges
-
-    // const breathT = (time % CYCLE) / CYCLE;
-    // const pulse = 8 + easeInOut(breathT) * 10;
-    // light1.intensity = pulse;
-    // light2.intensity = pulse * 0.8;
-    // light3.intensity = pulse * 0.6;
   };
 
   const _animate = (): void => {
@@ -404,6 +331,7 @@ export const createCircularBreathingInstallation = (
   const start = (): void => {
     _reset();
     window.addEventListener('resize', _onResize);
+    _onResize();
     _animate();
   };
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { Installation, CubeEntity } from './types';
-import { mouseToWorld, type MouseState } from '../input/mouse';
-import { rand } from '../utils';
+import type { Installation, CubeEntity } from '../types.ts';
+import { mouseToWorld, type MouseState } from '../../input/mouse.ts';
+import { rand } from '../../utils';
 
 export const createCubeInstallation = (
   renderer: THREE.WebGLRenderer,
@@ -252,6 +252,7 @@ export const createCubeInstallation = (
   const start = (): void => {
     _reset();
     window.addEventListener('resize', _onResize);
+    _onResize();
     _animate();
   };
 

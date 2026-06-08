@@ -2,11 +2,12 @@ import './styles/main.scss';
 import * as THREE from 'three';
 import type { Installation } from './installations/types';
 import { createMouseTracker } from './input/mouse';
-import { createCubeInstallation } from './installations/cube';
+import { createCubeInstallation } from './installations/cube-faces';
 import { createParticleInstallation } from './installations/particles';
 import { createTvNoise } from './transitions/noise';
-import { createCircularBreathingInstallation } from './installations/circular-breathing.ts';
+import { createCircularBreathingInstallation } from './installations/circular-breathing';
 import { createSoundEngine } from './audio/soundEngine.ts';
+import { createJungleMedicineInstallation } from './installations/jungle-medicine';
 
 const createApp = () => {
   const menuBtn = document.getElementById('menu-btn')!;
@@ -46,6 +47,7 @@ const createApp = () => {
     const mouse = createMouseTracker();
 
     installations = [
+      createJungleMedicineInstallation(renderer, mouse),
       createParticleInstallation(renderer, mouse),
       createCircularBreathingInstallation(renderer, mouse),
       createCubeInstallation(renderer, mouse),
