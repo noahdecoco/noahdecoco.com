@@ -1,4 +1,5 @@
 import './styles/main.scss';
+import { createAnalytics } from './analytics';
 import * as THREE from 'three';
 import type { Installation } from './installations/types';
 import { createMouseTracker } from './input/mouse';
@@ -133,4 +134,7 @@ const createApp = () => {
 };
 
 // ── ENTRY POINT ───────────────────────────────────────────────────
-window.addEventListener('load', () => createApp().start());
+window.addEventListener('load', () => {
+  createAnalytics();
+  createApp().start();
+});

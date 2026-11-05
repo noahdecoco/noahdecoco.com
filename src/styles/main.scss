@@ -326,7 +326,9 @@ body {
 }
 
 #sound-btn,
-#menu-btn {
+#menu-btn,
+#cookie-btn,
+#cookie-banner button {
   padding: 8px 12px;
   background: none;
   border: 1px solid var(--color-muted);
@@ -344,6 +346,37 @@ body {
     border-color: var(--color-phosphor);
     color: var(--color-phosphor);
   }
+}
+
+#cookie-banner {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100;
+  width: min(360px, calc(100% - 32px));
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--color-muted);
+  color: var(--color-text);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+
+  &[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+.cookie-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 #guide-overlay {

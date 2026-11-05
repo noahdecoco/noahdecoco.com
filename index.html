@@ -227,6 +227,9 @@
           >
             Guide
           </button>
+          <button id="cookie-btn" aria-label="Change cookie choice">
+            Cookies
+          </button>
         </div>
 
         <div
@@ -241,6 +244,17 @@
             <div id="guide-list"></div>
           </div>
         </div>
+
+        <aside id="cookie-banner" aria-label="Cookie choice" hidden>
+          <p>
+            Can I count your visit? With your OK, Google Analytics sets cookies
+            that show me how many people visit and where they come from.
+          </p>
+          <div class="cookie-actions">
+            <button id="cookie-decline">Decline</button>
+            <button id="cookie-accept">Accept</button>
+          </div>
+        </aside>
       </section>
     </div>
     <noscript>
