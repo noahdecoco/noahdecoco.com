@@ -25,12 +25,12 @@ export const createSoundEngine = () => {
     gain.gain.rampTo(0.5, 0.01);
 
     setTimeout(() => {
-      gain.gain.rampTo(1, 0.2);
+      gain.gain.rampTo(0, 0.2);
       setTimeout(() => {
         noise.dispose();
         filter.dispose();
         gain.dispose();
-      }, 100);
+      }, 250);
     }, 300);
   };
 

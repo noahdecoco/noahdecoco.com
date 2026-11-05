@@ -35,19 +35,23 @@ const createApp = () => {
     transitioning = true;
     soundEngine.play('static');
 
-    tvNoise.start(() => {
-      installations[current].stop();
-      current = index;
-      installations[current].start();
-      transitioning = false;
-    });
+    tvNoise.start(
+      () => {
+        installations[current].stop();
+        current = index;
+        installations[current].start();
+      },
+      () => {
+        transitioning = false;
+      }
+    );
   };
 
   const _setupInstallations = (): void => {
     const mouse = createMouseTracker();
 
     installations = [
-      createJungleMedicineInstallation(renderer, mouse),
+      createJungleMedicineInstallation(renderer),
       createParticleInstallation(renderer, mouse),
       createCircularBreathingInstallation(renderer, mouse),
       createCubeInstallation(renderer, mouse),
@@ -78,6 +82,7 @@ const createApp = () => {
     // space: load next
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.code === 'Space') {
+        e.preventDefault(); // stop a focused button from also being clicked
         _loadInstallation((current + 1) % installations.length);
       }
       if (e.key === 'Escape') {

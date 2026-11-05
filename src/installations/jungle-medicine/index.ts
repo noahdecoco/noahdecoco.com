@@ -1,12 +1,10 @@
 import * as THREE from 'three';
 import type { Installation } from '../types.ts';
-import type { MouseState } from '../../input/mouse.ts';
 import medicineVertexShader from './medicine.vert.glsl';
 import medicineFragmentShader from './medicine.frag.glsl';
 
 export const createJungleMedicineInstallation = (
-  renderer: THREE.WebGLRenderer,
-  mouse: MouseState
+  renderer: THREE.WebGLRenderer
 ): Installation => {
   const DEFAULT_PARAMS = {
     displacementScale: 3.2,
@@ -21,13 +19,13 @@ export const createJungleMedicineInstallation = (
     oilC: '#247208',
     rimColour: '#247208',
   };
+  const RADIUS = 5;
   const TIMER = new THREE.Timer();
 
   let time = 0;
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
   let animationId: number | null = null;
-  let raycaster: THREE.Raycaster;
   let touchStartTime = -1.0;
 
   // SETUP
@@ -54,7 +52,7 @@ export const createJungleMedicineInstallation = (
   };
 
   const _setupMedicine = (): void => {
-    const geometry = new THREE.SphereGeometry(5, 800, 800);
+    const geometry = new THREE.SphereGeometry(RADIUS, 800, 800);
     medicineMaterial = new THREE.ShaderMaterial({
       vertexShader: medicineVertexShader,
       fragmentShader: medicineFragmentShader,
@@ -82,33 +80,12 @@ export const createJungleMedicineInstallation = (
   };
 
   // ANIMATE
-  const _updateMouseState = (): void => {
-    raycaster.setFromCamera(new THREE.Vector2(mouse.x, mouse.y), camera);
-    const intersects = raycaster.intersectObject(medicineMesh);
-    if (intersects.length === 0) {
-    } else {
-      const localPoint = medicineMesh.worldToLocal(intersects[0].point.clone());
-      medicineMaterial.uniforms.uMousePos.value.copy(localPoint);
-    }
-  };
-
   const _animate = (): void => {
     TIMER.update();
     time += TIMER.getDelta();
 
-    _updateMouseState();
-
     medicineMaterial.uniforms.uTime.value += TIMER.getDelta();
     medicineMaterial.uniforms.uTouchTime.value = touchStartTime;
-    console.log(
-      'touchTime:',
-      medicineMaterial.uniforms.uTouchTime.value,
-      'uTime:',
-      medicineMaterial.uniforms.uTime.value,
-      'elapsed:',
-      medicineMaterial.uniforms.uTime.value -
-        medicineMaterial.uniforms.uTouchTime.value
-    );
     renderer.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
   };
@@ -118,6 +95,30 @@ export const createJungleMedicineInstallation = (
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+  };
+
+  // The sphere has a known shape, so test against it directly: raycasting the
+  // mesh walks all 1.28M triangles. The bound covers the displaced peaks, and
+  // the hit is projected back to the base radius the vertex shader measures from.
+  const _onPointerDown = (e: PointerEvent): void => {
+    const pointer = new THREE.Vector2(
+      (e.clientX / window.innerWidth) * 2 - 1,
+      -(e.clientY / window.innerHeight) * 2 + 1
+    );
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(pointer, camera);
+
+    const bounds = new THREE.Sphere(
+      medicineMesh.position,
+      RADIUS + DEFAULT_PARAMS.displacementScale
+    );
+    const hit = ray.ray.intersectSphere(bounds, new THREE.Vector3());
+    if (hit === null) return;
+
+    medicineMaterial.uniforms.uMousePos.value
+      .copy(medicineMesh.worldToLocal(hit))
+      .setLength(RADIUS);
+    touchStartTime = medicineMaterial.uniforms.uTime.value;
   };
 
   const _reset = (): void => {
@@ -130,12 +131,12 @@ export const createJungleMedicineInstallation = (
     _setupLights();
     _setupCamera();
     _setupMedicine();
-    raycaster = new THREE.Raycaster();
   };
 
   const start = (): void => {
     _reset();
     window.addEventListener('resize', _onResize);
+    renderer.domElement.addEventListener('pointerdown', _onPointerDown);
     _onResize();
     _animate();
   };
@@ -143,6 +144,7 @@ export const createJungleMedicineInstallation = (
   const stop = (): void => {
     if (animationId !== null) cancelAnimationFrame(animationId);
     window.removeEventListener('resize', _onResize);
+    renderer.domElement.removeEventListener('pointerdown', _onPointerDown);
   };
 
   const dispose = (): void => {

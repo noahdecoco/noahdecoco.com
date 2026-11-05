@@ -68,6 +68,7 @@ void main() {
   vDisplacement = displacement;
 
   float ripple = 0.0;
+  vRipple = 0.0;
 
   if (uTouchTime > 0.0) {
     // How long since the touch

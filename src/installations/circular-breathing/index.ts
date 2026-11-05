@@ -314,6 +314,7 @@ export const createCircularBreathingInstallation = (
   };
 
   const _reset = (): void => {
+    TIMER.update(); // drop the time that passed while this wasn't running
     time = 0;
   };
 
