@@ -8,10 +8,14 @@ import { createTvNoise, type TvNoise } from './transitions/noise';
 import { createCircularBreathingInstallation } from './installations/circular-breathing';
 import { createSoundEngine } from './audio/soundEngine.ts';
 import { createJungleMedicineInstallation } from './installations/jungle-medicine';
+import { createAboutInstallation } from './installations/about';
 import { createCrtDisplay } from './tv/crt';
 import { createGuide } from './tv/guide';
 import { createOsd } from './tv/osd';
 import { createRemote } from './tv/remote';
+
+// Each channel's number is its position, so the list starts with CH 00
+const OPENING_CHANNEL = 1;
 
 const createApp = () => {
   const soundEngine = createSoundEngine();
@@ -23,7 +27,7 @@ const createApp = () => {
   let installations: Installation[];
   let tvNoise: TvNoise;
   let guide: ReturnType<typeof createGuide>;
-  let current = 0;
+  let current = OPENING_CHANNEL;
   let transitioning = false;
 
   const _setupRenderer = (): void => {
@@ -37,7 +41,7 @@ const createApp = () => {
   const _showChannel = (): void => {
     guide.setCurrent(current);
     soundEngine.setChannel(installations[current].id);
-    osd.show(current + 1, installations[current].name);
+    osd.show(current, installations[current].name);
   };
 
   const _loadInstallation = (index: number): void => {
@@ -69,6 +73,7 @@ const createApp = () => {
     const display = createCrtDisplay(renderer, tvNoise);
 
     installations = [
+      createAboutInstallation(display),
       createJungleMedicineInstallation(renderer, display, soundEngine),
       createParticleInstallation(renderer, display, mouse, soundEngine),
       createCircularBreathingInstallation(

@@ -28,8 +28,8 @@ export const createRemote = ({
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       onPrevious();
-    } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= channelCount) {
-      onChannel(Number(e.key) - 1);
+    } else if (/^[0-9]$/.test(e.key) && Number(e.key) < channelCount) {
+      onChannel(Number(e.key));
     } else if (e.key === 'm') {
       onMute();
     }

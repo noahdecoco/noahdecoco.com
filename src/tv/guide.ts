@@ -24,7 +24,7 @@ export const createGuide = ({
     const row = document.createElement('button');
     row.className = 'guide-row';
     row.innerHTML = `
-      <span class="guide-number">${String(index + 1).padStart(2, '0')}</span>
+      <span class="guide-number">${String(index).padStart(2, '0')}</span>
       <img src="${import.meta.env.BASE_URL}thumbnails/${channel.id}.png" alt="" />
       <span class="guide-name">${channel.name}</span>
       <span class="guide-now">on now</span>
