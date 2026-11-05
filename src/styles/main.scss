@@ -31,6 +31,15 @@ body {
   touch-action: none;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 #title-panel {
   position: fixed;
   bottom: 6vh;
@@ -61,7 +70,7 @@ body {
     mix-blend-mode: exclusion;
   }
 
-  h2 {
+  .role {
     font-family: var(--font-mono), monospace;
     font-size: clamp(0.75rem, 1.2vw, 1rem);
     font-weight: 400;
@@ -71,7 +80,7 @@ body {
     margin-top: 0.75rem;
   }
 
-  h3 {
+  .contact {
     font-family: var(--font-mono), monospace;
     font-size: clamp(0.65rem, 1vw, 0.9rem);
     font-weight: 400;

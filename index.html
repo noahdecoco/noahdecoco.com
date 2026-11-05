@@ -2,9 +2,82 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Noah Fernandes — Creative Technologist</title>
+    <title>Noah Fernandes — Creative Coder &amp; Musician, Amsterdam</title>
+    <meta
+      name="description"
+      content="Noah Fernandes is a creative coder and musician in Amsterdam. Explore an interactive TV of WebGL channels: shaders, particles and generative sound."
+    />
+    <meta name="author" content="Noah Fernandes" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://noahdecoco.com/" />
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Noah Fernandes" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:url" content="https://noahdecoco.com/" />
+    <meta
+      property="og:title"
+      content="Noah Fernandes — Creative Coder &amp; Musician"
+    />
+    <meta
+      property="og:description"
+      content="An interactive TV of WebGL channels: shaders, particles and generative sound, all drawn live in code."
+    />
+    <meta property="og:image" content="https://noahdecoco.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Noah Fernandes' name beside a glowing green WebGL sphere on a dark CRT screen"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://noahdecoco.com/#website",
+            "url": "https://noahdecoco.com/",
+            "name": "Noah Fernandes",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://noahdecoco.com/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://noahdecoco.com/#person",
+            "name": "Noah Fernandes",
+            "alternateName": "noahdecoco",
+            "url": "https://noahdecoco.com/",
+            "image": "https://noahdecoco.com/og-image.png",
+            "jobTitle": "Creative Coder",
+            "description": "Creative coder and musician based in Amsterdam.",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Amsterdam",
+              "addressCountry": "NL"
+            },
+            "sameAs": [
+              "https://github.com/noahdecoco",
+              "https://noahfernandes.com",
+              "https://open.spotify.com/artist/5p3IIXsYQPHxCrtggdRAJ6",
+              "https://www.youtube.com/@sounds-like-noah",
+              "https://www.instagram.com/sounds.like.noah/"
+            ]
+          }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -97,11 +170,11 @@
 
         <div id="title-panel">
           <p class="label">— portfolio</p>
-          <h1>Noah<br />Fernandes</h1>
-          <h2>Creative Coder</h2>
-          <h3>
+          <h1>Noah <br />Fernandes</h1>
+          <p class="role">Creative coder &amp; musician in Amsterdam</p>
+          <p class="contact">
             <a href="mailto:noahdecoco@gmail.com">noahdecoco@gmail.com</a>
-          </h3>
+          </p>
           <div class="hints">
             <p class="hint">use the mouse to move + interact</p>
             <p class="hint hint-keys">
@@ -110,6 +183,34 @@
             <p class="hint hint-touch">swipe to switch channels</p>
           </div>
         </div>
+
+        <!-- Text version of the TV for search engines and screen readers.
+             Keep it in step with the channel list in src/main.ts. -->
+        <section id="channel-list" class="visually-hidden">
+          <h2>Channels</h2>
+          <ul>
+            <li>
+              <h3>CH 00: About Noah</h3>
+              <p>A teletext page with links to Noah's code and music.</p>
+            </li>
+            <li>
+              <h3>CH 01: Jungle Medicine</h3>
+              <p>A living WebGL sphere that ripples when you touch it.</p>
+            </li>
+            <li>
+              <h3>CH 02: Glowing in the sun</h3>
+              <p>Glowing particles that scatter away from your mouse.</p>
+            </li>
+            <li>
+              <h3>CH 03: A universe breathing</h3>
+              <p>Particles that drift in and out of a sphere like a slow breath.</p>
+            </li>
+            <li>
+              <h3>CH 04: Whatcha looking at?</h3>
+              <p>Cubes that turn to look at your mouse.</p>
+            </li>
+          </ul>
+        </section>
 
         <div id="osd" aria-live="polite">
           <p class="osd-number"></p>
@@ -142,6 +243,12 @@
         </div>
       </section>
     </div>
+    <noscript>
+      <p>
+        This site is an interactive TV built with WebGL, so it needs JavaScript
+        to play. You can reach Noah at noahdecoco@gmail.com.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
