@@ -7,6 +7,7 @@ interface RemoteOptions {
   onNext: () => void;
   onPrevious: () => void;
   onChannel: (index: number) => void;
+  onMute: () => void;
 }
 
 export const createRemote = ({
@@ -15,6 +16,7 @@ export const createRemote = ({
   onNext,
   onPrevious,
   onChannel,
+  onMute,
 }: RemoteOptions): void => {
   // ── KEYBOARD ────────────────────────────────────────────────
   window.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -28,6 +30,8 @@ export const createRemote = ({
       onPrevious();
     } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= channelCount) {
       onChannel(Number(e.key) - 1);
+    } else if (e.key === 'm') {
+      onMute();
     }
   });
 

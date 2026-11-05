@@ -3,17 +3,20 @@ import type { Installation, CubeEntity } from '../types.ts';
 import { mouseToWorld, type MouseState } from '../../input/mouse.ts';
 import { rand } from '../../utils';
 import type { Display } from '../../tv/crt.ts';
+import type { ChannelSound } from '../../audio/soundEngine.ts';
 
 export const createCubeInstallation = (
   renderer: THREE.WebGLRenderer,
   display: Display,
-  mouse: MouseState
+  mouse: MouseState,
+  sound: ChannelSound
 ): Installation => {
   // PHYSICS
   const HOME_STRENGTH = 0.04;
   const DAMPING = 0.85;
   const MOUSE_RADIUS = 3.5;
   const MOUSE_STRENGTH = 0.15;
+  const DISTURBANCE_RANGE = 3; // total cube speed that counts as full tension
 
   // MOUSE
   const mouseWorldPos = new THREE.Vector3();
@@ -42,6 +45,7 @@ export const createCubeInstallation = (
   let geometry: THREE.BoxGeometry;
   let time = 0;
   let animationId: number | null = null;
+  let disturbance = 0;
 
   const _setupScene = (): void => {
     scene = new THREE.Scene();
@@ -183,6 +187,7 @@ export const createCubeInstallation = (
       cube.vx += nx * force;
       cube.vy += ny * force;
       cube.vz += nz * force;
+      disturbance += Math.abs(cube.vx) + Math.abs(cube.vy);
     }
 
     cube.vx *= DAMPING;
@@ -218,9 +223,11 @@ export const createCubeInstallation = (
     mouseWorldPos.copy(mouseToWorld(mouse, camera));
     _updateLight();
     _updateCamera();
+    disturbance = 0;
     for (let i = 0; i < cubes.length; i++) {
       _updateCube(cubes[i]);
     }
+    sound.setLevel(Math.min(disturbance / DISTURBANCE_RANGE, 1));
     display.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
   };

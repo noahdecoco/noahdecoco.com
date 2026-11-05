@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import type { Installation } from '../types.ts';
 import type { Display } from '../../tv/crt.ts';
+import type { ChannelSound } from '../../audio/soundEngine.ts';
 import medicineVertexShader from './medicine.vert.glsl';
 import medicineFragmentShader from './medicine.frag.glsl';
 
 export const createJungleMedicineInstallation = (
   renderer: THREE.WebGLRenderer,
-  display: Display
+  display: Display,
+  sound: ChannelSound
 ): Installation => {
   const DEFAULT_PARAMS = {
     displacementScale: 3.2,
@@ -121,6 +123,7 @@ export const createJungleMedicineInstallation = (
       .copy(medicineMesh.worldToLocal(hit))
       .setLength(RADIUS);
     touchStartTime = medicineMaterial.uniforms.uTime.value;
+    sound.trigger();
   };
 
   const _reset = (): void => {

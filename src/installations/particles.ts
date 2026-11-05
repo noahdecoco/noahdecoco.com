@@ -3,6 +3,7 @@ import type { Installation } from './types';
 import { mouseToWorld, type MouseState } from '../input/mouse';
 import { rand, randInt } from '../utils';
 import type { Display } from '../tv/crt';
+import type { ChannelSound } from '../audio/soundEngine';
 
 // ── SHADERS ───────────────────────────────────────────────────────
 const vertexShader = `
@@ -60,7 +61,8 @@ interface Particle {
 export const createParticleInstallation = (
   renderer: THREE.WebGLRenderer,
   display: Display,
-  mouse: MouseState
+  mouse: MouseState,
+  sound: ChannelSound
 ): Installation => {
   // PHYSICS
   const COUNT = 600;
@@ -278,6 +280,7 @@ export const createParticleInstallation = (
 
   const _onClick = (): void => {
     exploding = true;
+    sound.trigger();
   };
 
   const _onScroll = (e: WheelEvent): void => {
@@ -304,7 +307,7 @@ export const createParticleInstallation = (
   const start = (): void => {
     _reset();
     window.addEventListener('resize', _onResize);
-    window.addEventListener('click', _onClick);
+    renderer.domElement.addEventListener('click', _onClick);
     window.addEventListener('wheel', _onScroll);
     _animate();
   };
@@ -312,7 +315,7 @@ export const createParticleInstallation = (
   const stop = (): void => {
     if (animationId !== null) cancelAnimationFrame(animationId);
     window.removeEventListener('resize', _onResize);
-    window.removeEventListener('click', _onClick);
+    renderer.domElement.removeEventListener('click', _onClick);
     window.removeEventListener('wheel', _onScroll);
   };
 

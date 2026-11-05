@@ -15,6 +15,7 @@ import { createRemote } from './tv/remote';
 
 const createApp = () => {
   const soundEngine = createSoundEngine();
+  const soundBtn = document.getElementById('sound-btn')!;
   const osd = createOsd(document.getElementById('osd')!);
 
   // STATE
@@ -35,13 +36,14 @@ const createApp = () => {
 
   const _showChannel = (): void => {
     guide.setCurrent(current);
+    soundEngine.setChannel(installations[current].id);
     osd.show(current + 1, installations[current].name);
   };
 
   const _loadInstallation = (index: number): void => {
     if (transitioning || index === current) return;
     transitioning = true;
-    soundEngine.play('static');
+    soundEngine.playStatic();
 
     tvNoise.start(
       () => {
@@ -67,16 +69,29 @@ const createApp = () => {
     const display = createCrtDisplay(renderer, tvNoise);
 
     installations = [
-      createJungleMedicineInstallation(renderer, display),
-      createParticleInstallation(renderer, display, mouse),
-      createCircularBreathingInstallation(renderer, display, mouse),
-      createCubeInstallation(renderer, display, mouse),
+      createJungleMedicineInstallation(renderer, display, soundEngine),
+      createParticleInstallation(renderer, display, mouse, soundEngine),
+      createCircularBreathingInstallation(
+        renderer,
+        display,
+        mouse,
+        soundEngine
+      ),
+      createCubeInstallation(renderer, display, mouse, soundEngine),
     ];
 
     installations.forEach((installation) => installation.setup());
   };
 
+  const _toggleSound = async (): Promise<void> => {
+    const on = await soundEngine.toggle();
+    soundBtn.textContent = on ? 'Sound on' : 'Sound off';
+    soundBtn.setAttribute('aria-pressed', String(on));
+  };
+
   const _setupControls = (): void => {
+    soundBtn.addEventListener('click', _toggleSound);
+
     guide = createGuide({
       button: document.getElementById('menu-btn')!,
       overlay: document.getElementById('guide-overlay')!,
@@ -91,6 +106,7 @@ const createApp = () => {
       onNext: () => _step(1),
       onPrevious: () => _step(-1),
       onChannel: _loadInstallation,
+      onMute: _toggleSound,
     });
   };
 

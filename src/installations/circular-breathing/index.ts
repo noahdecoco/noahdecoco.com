@@ -3,6 +3,7 @@ import type { Installation } from '../types.ts';
 import { rand, randInt } from '../../utils';
 import type { MouseState } from '../../input/mouse.ts';
 import type { Display } from '../../tv/crt.ts';
+import type { ChannelSound } from '../../audio/soundEngine.ts';
 import skyboxVertexShader from './skybox.vert.glsl';
 import skyboxFragmentShader from './skybox.frag.glsl';
 import particlesVertexShader from './particles.vert.glsl';
@@ -34,7 +35,8 @@ interface Particle {
 export const createCircularBreathingInstallation = (
   renderer: THREE.WebGLRenderer,
   display: Display,
-  mouse: MouseState
+  mouse: MouseState,
+  sound: ChannelSound
 ): Installation => {
   const COUNT = 3000;
   const TIMER = new THREE.Timer();
@@ -299,6 +301,7 @@ export const createCircularBreathingInstallation = (
     _animateParticles(time);
     _animateCamera();
 
+    sound.setLevel((getScale(time) - MIN_SCALE) / (MAX_SCALE - MIN_SCALE));
     sphereInner.scale.setScalar(getScale(time));
     sphereOuter.scale.setScalar(getScale(time) + 0.1);
     wireframes.forEach((frame) => {
