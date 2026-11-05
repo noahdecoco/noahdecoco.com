@@ -27,6 +27,11 @@ interface Particle {
   exhaleX: number;
   exhaleY: number;
   exhaleZ: number;
+  // a second point on the particle's orbit, a quarter turn on from the first
+  orbitX: number;
+  orbitY: number;
+  orbitZ: number;
+  orbitSpeed: number;
   offset: number;
   size: number;
   colourIndex: number;
@@ -40,15 +45,20 @@ export const createCircularBreathingInstallation = (
 ): Installation => {
   const COUNT = 3000;
   const TIMER = new THREE.Timer();
-  const PHASE_DURATION = 5;
-  const CYCLE = PHASE_DURATION * 2;
+  const SWARM_COUNT = COUNT * 0.8; // the rest stay put as distant stars
   const MIN_SCALE = 1;
   const MAX_SCALE = 3;
   const DRIFT = 0.5;
+  const INHALE_RATE = 2.5; // a sharp breath in
+  const EXHALE_RATE = 0.6; // a slow breath out
 
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
   let time = 0;
+  let breath = 0; // 0 is swarming around the sphere, 1 is all held inside it
+  let holding = false;
+  let orbitTime = 0;
+  let wireframeScale = MIN_SCALE;
   let animationId: number | null = null;
   let sphereInner: THREE.Mesh;
   let sphereOuter: THREE.Mesh;
@@ -186,12 +196,19 @@ export const createCircularBreathingInstallation = (
       // exhale position: outside the sphere
       const exhaleLongitude = rand(0, Math.PI * 2);
       const exhaleLatitude = rand(0, Math.PI);
-      const exhaleRadius = rand(10, 30);
+      const exhaleRadius = i < SWARM_COUNT ? rand(2.5, 8) : rand(10, 30);
       const exhaleX =
         exhaleRadius * Math.sin(exhaleLatitude) * Math.cos(exhaleLongitude);
       const exhaleY =
         exhaleRadius * Math.sin(exhaleLatitude) * Math.sin(exhaleLongitude);
       const exhaleZ = exhaleRadius * Math.cos(exhaleLatitude);
+
+      // any line at right angles to the start point gives a circular orbit
+      const orbit = new THREE.Vector3(exhaleX, exhaleY, exhaleZ)
+        .cross(
+          new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).normalize()
+        )
+        .setLength(exhaleRadius);
 
       const colourIndex = randInt(0, COLOURS.length - 1);
       const colour = COLOURS[colourIndex];
@@ -203,6 +220,10 @@ export const createCircularBreathingInstallation = (
         exhaleX,
         exhaleY,
         exhaleZ,
+        orbitX: orbit.x,
+        orbitY: orbit.y,
+        orbitZ: orbit.z,
+        orbitSpeed: rand(0.3, 1) * (Math.random() < 0.5 ? -1 : 1),
         size: rand(1, 2),
         offset: rand(0, Math.PI * 2),
         colourIndex,
@@ -220,41 +241,43 @@ export const createCircularBreathingInstallation = (
     }
   };
 
-  const easeInOut = (t: number): number => {
-    return Math.pow((1 - Math.cos(t * Math.PI)) / 2, 2);
+  const getScale = (): number => MIN_SCALE + (MAX_SCALE - MIN_SCALE) * breath;
+
+  const _updateBreath = (delta: number): void => {
+    const target = holding ? 1 : 0;
+    const rate = holding ? INHALE_RATE : EXHALE_RATE;
+    breath += (target - breath) * (1 - Math.exp(-delta * rate));
+
+    // Every few seconds the swarm surges, and it stills as the breath comes in
+    const surge = 1 + 2.5 * Math.max(0, Math.sin(time * 0.9)) ** 6;
+    orbitTime += delta * surge * (1 - breath);
   };
 
-  const getScale = (t: number): number => {
-    const phase = t % CYCLE;
-    const difference = MAX_SCALE - MIN_SCALE;
-
-    if (phase < PHASE_DURATION) {
-      return MIN_SCALE + difference * easeInOut(phase / PHASE_DURATION);
-    } else {
-      return (
-        MAX_SCALE -
-        difference * easeInOut((phase - PHASE_DURATION) / PHASE_DURATION)
-      );
-    }
+  const _onPointerDown = (e: PointerEvent): void => {
+    if (e.button === 0) holding = true;
   };
+
+  const _onPointerUp = (): void => {
+    holding = false;
+  };
+
+  // A long press on a phone would otherwise open the browser's menu
+  const _onContextMenu = (e: Event): void => e.preventDefault();
 
   const _animateParticles = (t: number): void => {
-    const phase = t % CYCLE;
-    let progress: number;
-
-    if (phase < PHASE_DURATION) {
-      progress = easeInOut(phase / PHASE_DURATION);
-    } else {
-      progress = 1 - easeInOut((phase - PHASE_DURATION) / PHASE_DURATION);
-    }
-
-    for (let i = 0; i < COUNT * 0.8; i++) {
+    for (let i = 0; i < SWARM_COUNT; i++) {
       const p = particles[i];
 
-      // base position: lerp between exhale (outside) and inhale (inside)
-      const baseX = p.exhaleX + (p.inhaleX - p.exhaleX) * progress;
-      const baseY = p.exhaleY + (p.inhaleY - p.exhaleY) * progress;
-      const baseZ = p.exhaleZ + (p.inhaleZ - p.exhaleZ) * progress;
+      const angle = orbitTime * p.orbitSpeed;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const orbitX = p.exhaleX * cos + p.orbitX * sin;
+      const orbitY = p.exhaleY * cos + p.orbitY * sin;
+      const orbitZ = p.exhaleZ * cos + p.orbitZ * sin;
+
+      const baseX = orbitX + (p.inhaleX - orbitX) * breath;
+      const baseY = orbitY + (p.inhaleY - orbitY) * breath;
+      const baseZ = orbitZ + (p.inhaleZ - orbitZ) * breath;
 
       // constant dust-like drift around base position
       positions[i * 3] = baseX + Math.sin(t * 0.3 + p.offset) * DRIFT;
@@ -295,17 +318,22 @@ export const createCircularBreathingInstallation = (
 
   const _animate = (): void => {
     TIMER.update();
-    time += TIMER.getDelta();
+    const delta = TIMER.getDelta();
+    time += delta;
+    _updateBreath(delta);
 
     _animateLights();
     _animateParticles(time);
     _animateCamera();
 
-    sound.setLevel((getScale(time) - MIN_SCALE) / (MAX_SCALE - MIN_SCALE));
-    sphereInner.scale.setScalar(getScale(time));
-    sphereOuter.scale.setScalar(getScale(time) + 0.1);
+    const scale = getScale();
+    wireframeScale += (scale - wireframeScale) * 0.08; // trails the sphere
+
+    sound.setLevel(breath);
+    sphereInner.scale.setScalar(scale);
+    sphereOuter.scale.setScalar(scale + 0.1);
     wireframes.forEach((frame) => {
-      frame.scale.setScalar(getScale(time + 0.3));
+      frame.scale.setScalar(wireframeScale);
     });
 
     display.render(scene, camera);
@@ -321,6 +349,10 @@ export const createCircularBreathingInstallation = (
   const _reset = (): void => {
     TIMER.update(); // drop the time that passed while this wasn't running
     time = 0;
+    breath = 0;
+    holding = false;
+    orbitTime = 0;
+    wireframeScale = MIN_SCALE;
   };
 
   const setup = (): void => {
@@ -337,6 +369,10 @@ export const createCircularBreathingInstallation = (
   const start = (): void => {
     _reset();
     window.addEventListener('resize', _onResize);
+    renderer.domElement.addEventListener('pointerdown', _onPointerDown);
+    renderer.domElement.addEventListener('contextmenu', _onContextMenu);
+    window.addEventListener('pointerup', _onPointerUp);
+    window.addEventListener('pointercancel', _onPointerUp);
     _onResize();
     _animate();
   };
@@ -344,6 +380,10 @@ export const createCircularBreathingInstallation = (
   const stop = (): void => {
     if (animationId !== null) cancelAnimationFrame(animationId);
     window.removeEventListener('resize', _onResize);
+    renderer.domElement.removeEventListener('pointerdown', _onPointerDown);
+    renderer.domElement.removeEventListener('contextmenu', _onContextMenu);
+    window.removeEventListener('pointerup', _onPointerUp);
+    window.removeEventListener('pointercancel', _onPointerUp);
   };
 
   const dispose = (): void => {
@@ -354,6 +394,7 @@ export const createCircularBreathingInstallation = (
   return {
     id: 'circular-breathing',
     name: 'A universe breathing',
+    hint: 'press and hold to inhale',
     setup,
     start,
     stop,

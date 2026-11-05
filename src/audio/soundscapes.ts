@@ -147,7 +147,8 @@ const createBreathingSound = (bus: Tone.ToneAudioNode): Soundscape => {
   };
 };
 
-// A clashing, pulsing tone that speeds up as the cubes are disturbed
+// A clashing, pulsing tone that speeds up as the cubes are disturbed. Pokes
+// land with a low knock.
 const createCubeSound = (bus: Tone.ToneAudioNode): Soundscape => {
   const { output, track, dispose } = createOutput(bus);
 
@@ -166,9 +167,21 @@ const createCubeSound = (bus: Tone.ToneAudioNode): Soundscape => {
   const hissFilter = track(new Tone.Filter(4000, 'highpass')).connect(hiss);
   track(new Tone.Noise('white').start()).connect(hissFilter);
 
+  const knock = track(
+    new Tone.MembraneSynth({
+      pitchDecay: 0.02,
+      octaves: 4,
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.1 },
+    })
+  ).connect(output);
+  knock.volume.value = -8;
+
   return {
     output,
     dispose,
+    trigger: () => {
+      knock.triggerAttackRelease(pick(['C2', 'E2', 'G2']), 0.1);
+    },
     setLevel: (level) => {
       tension.gain.rampTo(0.3 + level * 0.7, GLIDE);
       lfo.frequency.rampTo(1.5 + level * 6, GLIDE);

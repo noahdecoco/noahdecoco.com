@@ -42,7 +42,8 @@ const createApp = () => {
   const _showChannel = (): void => {
     guide.setCurrent(current);
     soundEngine.setChannel(installations[current].id);
-    osd.show(current, installations[current].name);
+    const { name, hint } = installations[current];
+    osd.show(current, name, hint);
   };
 
   const _loadInstallation = (index: number): void => {

@@ -308,6 +308,18 @@ body {
   letter-spacing: 0.05em;
 }
 
+.osd-hint {
+  margin-top: 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+
+  &:empty {
+    display: none;
+  }
+}
+
 .osd-name {
   font-family: var(--font-mono), monospace;
   font-size: 0.8rem;

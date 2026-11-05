@@ -3,6 +3,7 @@ import * as THREE from 'three';
 export interface Installation {
   id: string;
   name: string;
+  hint?: string; // shown under the channel name when it comes on
   setup: () => void;
   start: () => void;
   stop: () => void;
