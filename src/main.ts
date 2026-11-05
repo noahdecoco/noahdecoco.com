@@ -61,7 +61,7 @@ const createApp = () => {
       const thumb = document.createElement('div');
       thumb.className = 'gallery-thumb';
       thumb.innerHTML = `
-        <img src="/thumbnails/${installation.id}.png" alt="${installation.name}" />
+        <img src="${import.meta.env.BASE_URL}thumbnails/${installation.id}.png" alt="${installation.name}" />
         <p>${installation.name}</p>
       `;
       thumb.addEventListener('click', () => {

@@ -19,14 +19,16 @@ export const createCubeInstallation = (
   const tempMatrix = new THREE.Matrix4();
 
   // TEXTURES
-  const loader = new THREE.TextureLoader();
+  const loader = new THREE.TextureLoader().setPath(
+    `${import.meta.env.BASE_URL}textures/`
+  );
   const faceTextures = [
-    loader.load('/textures/right.jpg'),
-    loader.load('/textures/left.jpg'),
-    loader.load('/textures/top.jpg'),
-    loader.load('/textures/bottom.jpg'),
-    loader.load('/textures/back.jpg'),
-    loader.load('/textures/front.jpg'),
+    loader.load('right.jpg'),
+    loader.load('left.jpg'),
+    loader.load('top.jpg'),
+    loader.load('bottom.jpg'),
+    loader.load('back.jpg'),
+    loader.load('front.jpg'),
   ];
 
   let scene: THREE.Scene;
