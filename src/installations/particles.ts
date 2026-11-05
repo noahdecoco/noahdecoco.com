@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Installation } from './types';
 import { mouseToWorld, type MouseState } from '../input/mouse';
 import { rand, randInt } from '../utils';
+import type { Display } from '../tv/crt';
 
 // ── SHADERS ───────────────────────────────────────────────────────
 const vertexShader = `
@@ -58,6 +59,7 @@ interface Particle {
 // ── FACTORY ───────────────────────────────────────────────────────
 export const createParticleInstallation = (
   renderer: THREE.WebGLRenderer,
+  display: Display,
   mouse: MouseState
 ): Installation => {
   // PHYSICS
@@ -263,7 +265,7 @@ export const createParticleInstallation = (
   const _animate = (): void => {
     _updatePhysics();
     _updateCamera();
-    renderer.render(scene, camera);
+    display.render(scene, camera);
     exploding = false;
     animationId = requestAnimationFrame(_animate);
   };

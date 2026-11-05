@@ -37,10 +37,12 @@ const fragmentShader = `
   }
 `;
 
+const DURATION_MS = 600;
+
 export interface TvNoise {
   start: (onMidpoint: () => void, onComplete: () => void) => void;
+  render: () => void;
   dispose: () => void;
-  mesh: THREE.Mesh;
 }
 
 export const createTvNoise = (renderer: THREE.WebGLRenderer): TvNoise => {
@@ -81,26 +83,26 @@ export const createTvNoise = (renderer: THREE.WebGLRenderer): TvNoise => {
   };
 
   const start = (onMidpoint: () => void, onComplete: () => void): void => {
+    const startedAt = performance.now();
+    let hasSwitched = false;
+
     mesh.visible = true;
     material.uniforms.uProgress.value = 0;
-    let hasSwitched = false;
-    const animate = (): void => {
-      // Increment progress 0 → 1 over roughly 40 frames
-      material.uniforms.uProgress.value += 0.025;
-      material.uniforms.uTime.value += 0.1;
 
-      // Halfway through — trigger the installation switch. This runs before
-      // the render and the next rAF request so the new installation's loop is
-      // queued ahead of this one and the noise keeps drawing on top of it.
-      if (!hasSwitched && material.uniforms.uProgress.value >= 0.5) {
+    const animate = (): void => {
+      const elapsed = performance.now() - startedAt;
+      const progress = Math.min(elapsed / DURATION_MS, 1);
+      material.uniforms.uProgress.value = progress;
+      material.uniforms.uTime.value = elapsed / 100;
+
+      // Halfway through — trigger the installation switch
+      if (!hasSwitched && progress >= 0.5) {
         hasSwitched = true;
         onMidpoint();
       }
 
-      renderer.render(scene, camera);
-
       // Done — hide and clean up
-      if (material.uniforms.uProgress.value >= 1.0) {
+      if (progress >= 1) {
         mesh.visible = false;
         animationId = null;
         onComplete();
@@ -111,6 +113,11 @@ export const createTvNoise = (renderer: THREE.WebGLRenderer): TvNoise => {
     };
 
     animate();
+  };
+
+  // Drawn by the display, on top of whichever installation is running
+  const render = (): void => {
+    if (mesh.visible) renderer.render(scene, camera);
   };
 
   const stop = (): void => {
@@ -129,5 +136,5 @@ export const createTvNoise = (renderer: THREE.WebGLRenderer): TvNoise => {
 
   _init();
 
-  return { start, dispose, mesh };
+  return { start, render, dispose };
 };

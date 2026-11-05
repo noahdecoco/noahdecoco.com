@@ -4,30 +4,38 @@ import type { Installation } from './installations/types';
 import { createMouseTracker } from './input/mouse';
 import { createCubeInstallation } from './installations/cube-faces';
 import { createParticleInstallation } from './installations/particles';
-import { createTvNoise } from './transitions/noise';
+import { createTvNoise, type TvNoise } from './transitions/noise';
 import { createCircularBreathingInstallation } from './installations/circular-breathing';
 import { createSoundEngine } from './audio/soundEngine.ts';
 import { createJungleMedicineInstallation } from './installations/jungle-medicine';
+import { createCrtDisplay } from './tv/crt';
+import { createGuide } from './tv/guide';
+import { createOsd } from './tv/osd';
+import { createRemote } from './tv/remote';
 
 const createApp = () => {
-  const menuBtn = document.getElementById('menu-btn')!;
-  const overlay = document.getElementById('gallery-overlay')!;
-  const grid = document.getElementById('gallery-grid')!;
   const soundEngine = createSoundEngine();
+  const osd = createOsd(document.getElementById('osd')!);
 
   // STATE
   let renderer: THREE.WebGLRenderer;
   let installations: Installation[];
-  let tvNoise: ReturnType<typeof createTvNoise>;
+  let tvNoise: TvNoise;
+  let guide: ReturnType<typeof createGuide>;
   let current = 0;
   let transitioning = false;
 
   const _setupRenderer = (): void => {
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.autoClear = false;
     document.getElementById('three-renderer')!.appendChild(renderer.domElement);
+  };
+
+  const _showChannel = (): void => {
+    guide.setCurrent(current);
+    osd.show(current + 1, installations[current].name);
   };
 
   const _loadInstallation = (index: number): void => {
@@ -40,6 +48,7 @@ const createApp = () => {
         installations[current].stop();
         current = index;
         installations[current].start();
+        _showChannel();
       },
       () => {
         transitioning = false;
@@ -47,57 +56,41 @@ const createApp = () => {
     );
   };
 
+  const _step = (direction: number): void => {
+    const count = installations.length;
+    _loadInstallation((current + direction + count) % count);
+  };
+
   const _setupInstallations = (): void => {
     const mouse = createMouseTracker();
+    tvNoise = createTvNoise(renderer);
+    const display = createCrtDisplay(renderer, tvNoise);
 
     installations = [
-      createJungleMedicineInstallation(renderer),
-      createParticleInstallation(renderer, mouse),
-      createCircularBreathingInstallation(renderer, mouse),
-      createCubeInstallation(renderer, mouse),
+      createJungleMedicineInstallation(renderer, display),
+      createParticleInstallation(renderer, display, mouse),
+      createCircularBreathingInstallation(renderer, display, mouse),
+      createCubeInstallation(renderer, display, mouse),
     ];
 
-    installations.forEach((installation, index) => {
-      const thumb = document.createElement('div');
-      thumb.className = 'gallery-thumb';
-      thumb.innerHTML = `
-        <img src="${import.meta.env.BASE_URL}thumbnails/${installation.id}.png" alt="${installation.name}" />
-        <p>${installation.name}</p>
-      `;
-      thumb.addEventListener('click', () => {
-        overlay.classList.remove('open');
-        _loadInstallation(index);
-      });
-      grid.appendChild(thumb);
-
-      installation.setup();
-    });
-
-    installations[current].start();
+    installations.forEach((installation) => installation.setup());
   };
 
   const _setupControls = (): void => {
-    tvNoise = createTvNoise(renderer);
-
-    // space: load next
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault(); // stop a focused button from also being clicked
-        _loadInstallation((current + 1) % installations.length);
-      }
-      if (e.key === 'Escape') {
-        overlay.classList.remove('open');
-      }
+    guide = createGuide({
+      button: document.getElementById('menu-btn')!,
+      overlay: document.getElementById('guide-overlay')!,
+      list: document.getElementById('guide-list')!,
+      channels: installations,
+      onSelect: _loadInstallation,
     });
 
-    // menu toggle
-    menuBtn.addEventListener('click', () => {
-      overlay.classList.toggle('open');
-    });
-
-    // close on backdrop click
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.classList.remove('open');
+    createRemote({
+      channelCount: installations.length,
+      isLocked: guide.isOpen,
+      onNext: () => _step(1),
+      onPrevious: () => _step(-1),
+      onChannel: _loadInstallation,
     });
   };
 
@@ -110,6 +103,9 @@ const createApp = () => {
     _setupInstallations();
     _setupControls();
     window.addEventListener('resize', _onResize);
+
+    installations[current].start();
+    _showChannel();
   };
 
   return { start };

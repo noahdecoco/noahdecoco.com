@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Installation } from '../types.ts';
 import { rand, randInt } from '../../utils';
 import type { MouseState } from '../../input/mouse.ts';
+import type { Display } from '../../tv/crt.ts';
 import skyboxVertexShader from './skybox.vert.glsl';
 import skyboxFragmentShader from './skybox.frag.glsl';
 import particlesVertexShader from './particles.vert.glsl';
@@ -32,6 +33,7 @@ interface Particle {
 
 export const createCircularBreathingInstallation = (
   renderer: THREE.WebGLRenderer,
+  display: Display,
   mouse: MouseState
 ): Installation => {
   const COUNT = 3000;
@@ -303,7 +305,7 @@ export const createCircularBreathingInstallation = (
       frame.scale.setScalar(getScale(time + 0.3));
     });
 
-    renderer.render(scene, camera);
+    display.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
   };
 

@@ -26,18 +26,38 @@
           </h3>
           <div class="hints">
             <p class="hint">use the mouse to move + interact</p>
-            <p class="hint">press [space] to switch channels</p>
+            <p class="hint hint-keys">
+              press [space] or [1-4] to switch channels
+            </p>
+            <p class="hint hint-touch">swipe to switch channels</p>
           </div>
         </div>
 
-        <button id="menu-btn" aria-label="Open gallery">
-          <span></span>
-          <span></span>
-          <span></span>
+        <div id="osd" aria-live="polite">
+          <p class="osd-number"></p>
+          <p class="osd-name"></p>
+        </div>
+
+        <button
+          id="menu-btn"
+          aria-label="Open TV guide"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+        >
+          Guide
         </button>
 
-        <div id="gallery-overlay" aria-hidden="true">
-          <div id="gallery-grid"></div>
+        <div
+          id="guide-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="TV guide"
+          aria-hidden="true"
+        >
+          <div id="guide-panel">
+            <p class="guide-title">TV Guide</p>
+            <div id="guide-list"></div>
+          </div>
         </div>
       </section>
     </div>

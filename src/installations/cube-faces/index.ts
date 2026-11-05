@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import type { Installation, CubeEntity } from '../types.ts';
 import { mouseToWorld, type MouseState } from '../../input/mouse.ts';
 import { rand } from '../../utils';
+import type { Display } from '../../tv/crt.ts';
 
 export const createCubeInstallation = (
   renderer: THREE.WebGLRenderer,
+  display: Display,
   mouse: MouseState
 ): Installation => {
   // PHYSICS
@@ -219,7 +221,7 @@ export const createCubeInstallation = (
     for (let i = 0; i < cubes.length; i++) {
       _updateCube(cubes[i]);
     }
-    renderer.render(scene, camera);
+    display.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
   };
 

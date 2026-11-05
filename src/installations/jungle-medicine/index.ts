@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import type { Installation } from '../types.ts';
+import type { Display } from '../../tv/crt.ts';
 import medicineVertexShader from './medicine.vert.glsl';
 import medicineFragmentShader from './medicine.frag.glsl';
 
 export const createJungleMedicineInstallation = (
-  renderer: THREE.WebGLRenderer
+  renderer: THREE.WebGLRenderer,
+  display: Display
 ): Installation => {
   const DEFAULT_PARAMS = {
     displacementScale: 3.2,
@@ -86,7 +88,7 @@ export const createJungleMedicineInstallation = (
 
     medicineMaterial.uniforms.uTime.value += TIMER.getDelta();
     medicineMaterial.uniforms.uTouchTime.value = touchStartTime;
-    renderer.render(scene, camera);
+    display.render(scene, camera);
     animationId = requestAnimationFrame(_animate);
   };
 
