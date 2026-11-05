@@ -1,22 +1,22 @@
-name: Deploy to GitHub Pages
+# Builds the site and copies it to the droplet on every push to main.
+# Needs three repository secrets (Settings -> Secrets and variables -> Actions):
+#   DEPLOY_HOST  the droplet's IP address
+#   DEPLOY_USER  the SSH user
+#   DEPLOY_KEY   a private SSH key whose public half is in that user's
+#                ~/.ssh/authorized_keys
+name: Deploy
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Only the latest push matters, so a newer run replaces one still in progress.
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,16 +26,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Set up SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      # No --delete: files on the server that aren't in dist/ are left alone
+      - name: Upload to droplet
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          rsync -avz -e "ssh -i ~/.ssh/deploy_key" dist/ \
+            "$DEPLOY_USER@$DEPLOY_HOST:/var/www/noahdecoco.com/"
